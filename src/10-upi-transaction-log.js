@@ -48,4 +48,86 @@
  */
 export function analyzeUPITransactions(transactions) {
   // Your code here
+
+  //  * Validation:
+  //  *   - Agar transactions array nahi hai ya empty hai, return null
+  //  *   - Agar after filtering invalid transactions, koi valid nahi bacha, return null
+  //  *
+  if (!Array.isArray(transactions) || transactions.length === 0) return null;
+
+  const validTranx = transactions.filter(tranx => {
+    return (typeof tranx.amount === "number" && tranx.amount > 0) && (tranx.type === "credit" || tranx.type === "debit");
+  })
+
+  if (validTranx.length === 0) return null;
+
+  //   * Rules:
+  //  *   - transactions is array of objects:
+  //  *     [{ id: "TXN001", type: "credit"/"debit", amount: 500,
+  //  *        to: "Rahul", category: "food", date: "2025-01-15" }, ...]
+  //  *   - Skip transactions where amount is not a positive number
+  //  *   - Skip transactions where type is not "credit" or "debit"
+  //  *   - Calculate (on valid transactions only):
+  //  *     - totalCredit: sum of all "credit" type amounts
+  //  *     - totalDebit: sum of all "debit" type amounts
+  //  *     - netBalance: totalCredit - totalDebit
+  //  *     - transactionCount: total number of valid transactions
+  //  *     - avgTransaction: Math.round(sum of all valid amounts / transactionCount)
+  //  *     - highestTransaction: the full transaction object with highest amount
+  //  *     - categoryBreakdown: object with category as key and total amount as value
+  //  *       e.g., { food: 1500, travel: 800 } (include both credit and debit)
+  //  *     - frequentContact: the "to" field value that appears most often
+  //  *       (if tie, return whichever appears first)
+  //  *     - allAbove100: boolean, true if every valid transaction amount > 100 (use every)
+  //  *     - hasLargeTransaction: boolean, true if some valid amount >= 5000 (use some)
+  //  *   - Hint: Use filter(), reduce(), sort(), find(), every(), some(),
+  //  *     Object.entries(), Math.round(), typeof
+  //  *
+
+  const totalCredit = validTranx.filter(cre => cre.type === "credit").reduce((total, cre) => total + cre.amount, 0);
+
+  const totalDebit = validTranx.filter(deb => deb.type === "debit").reduce((total, deb) => total + deb.amount, 0);
+
+  const netBalance = totalCredit - totalDebit;
+
+  const transactionCount = validTranx.length;
+
+  const totalAmountSum = validTranx.reduce((sum, t) => sum + t.amount, 0);
+  const avgTransaction = Math.round(totalAmountSum / transactionCount);
+
+  const highestTransaction = validTranx.reduce((prev, curr) =>
+    (prev.amount > curr.amount) ? prev : curr
+  );
+
+  const categoryBreakdown = validTranx.reduce((acc, txn) => {
+    acc[txn.category] = (acc[txn.category] || 0) + txn.amount;
+    return acc;
+  }, {});
+
+  const contactCounts = validTranx.reduce((acc, txn) => {
+    acc[txn.to] = (acc[txn.to] || 0) + 1;
+    return acc;
+  }, {});
+
+  const frequentContact = Object.keys(contactCounts).reduce((a, b) =>
+    contactCounts[a] >= contactCounts[b] ? a : b
+  );
+
+  const allAbove100 = validTranx.every(txn => txn.amount > 100);
+
+  const hasLargeTransaction = validTranx.some(txn => txn.amount >= 5000);
+
+  return {
+    totalCredit: totalCredit,
+    totalDebit: totalDebit,
+    netBalance: netBalance,
+    transactionCount: transactionCount,
+    avgTransaction: avgTransaction,
+    highestTransaction: highestTransaction,
+    categoryBreakdown: categoryBreakdown,
+    frequentContact: frequentContact,
+    allAbove100: allAbove100,
+    hasLargeTransaction: hasLargeTransaction
+  };
+
 }

@@ -38,6 +38,45 @@
  *   // => { date: "01/12/2024", time: "09:15", sender: "Priya",
  *   //      text: "I love this song", wordCount: 4, sentiment: "love" }
  */
+
+
 export function parseWhatsAppMessage(message) {
   // Your code here
+  if (typeof message !== "string") return null;
+  const seperatorone = "-";
+  const seperatortwo = ":";
+
+  const dashIndex = message.indexOf(seperatorone);
+  const colonIndex = message.indexOf(seperatortwo, dashIndex);
+  if (dashIndex === -1 || colonIndex === -1) return null;
+
+  const funnySentiment = ["😂", ":)", "haha"];
+  const loveSentiment = ["❤", "love", "pyaar"];
+
+  //  * WhatsApp export format:
+  //  *   "DD/MM/YYYY, HH:MM - Sender Name: Message text here"
+
+  const dateEndString = message.indexOf(", ");
+  const dateString = message.substring(0, dateEndString);
+
+  const timeString = (message.substring(dateEndString + 2, dashIndex)).trim();
+
+  const onlyName = message.substring(dashIndex + 2, colonIndex)
+  const onlyMes = message.substring(colonIndex + 2).trim();
+
+  const countWords = onlyMes.split(" ").filter(word => word.length > 0).length;
+  const lowerMes = onlyMes.toLowerCase();
+  let sentiments;
+  if (funnySentiment.some(key => lowerMes.includes(key))) sentiments = "funny"
+  else if (loveSentiment.some(key => lowerMes.includes(key))) sentiments = "love"
+  else sentiments = "neutral";
+
+  return {
+    date: dateString,
+    time: timeString,
+    sender: onlyName,
+    text: onlyMes,
+    wordCount: countWords,
+    sentiment: sentiments
+  }
 }

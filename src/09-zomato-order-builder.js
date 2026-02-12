@@ -47,4 +47,81 @@
  */
 export function buildZomatoOrder(cart, coupon) {
   // Your code here
+  if (!Array.isArray(cart) || cart.length === 0) return null;
+  //   * Rules:
+  //  *   - cart is array of items:
+  //  *     [{ name: "Butter Chicken", price: 350, qty: 2, addons: ["Extra Butter:50", "Naan:40"] }, ...]
+  //  *   - Each addon string format: "AddonName:Price" (split by ":" to get price)
+  //  *   - Per item total = (price + sum of addon prices) * qty
+  //  *   - Calculate:
+  //  *     - items: array of { name, qty, basePrice, addonTotal, itemTotal }
+  //  *     - subtotal: sum of all itemTotals
+  //  *     - deliveryFee: Rs 30 if subtotal < 500, Rs 15 if 500-999, FREE (0) if >= 1000
+  //  *     - gst: 5% of subtotal, rounded to 2 decimal places parseFloat(val.toFixed(2))
+  //  *     - discount: based on coupon (see below)
+  //  *     - grandTotal: subtotal + deliveryFee + gst - discount (minimum 0, use Math.max)
+  //  *     - Round grandTotal to 2 decimal places
+  //  *
+
+  const processedItems = cart.filter(item => item.qty > 0).map(item => {
+    let addonTotal = 0;
+    if (item.addons && item.addons.length > 0) {
+      addonTotal = item.addons.reduce((sum, addonStr) => {
+        const pricePart = addonStr.split(":")[1];
+        return sum + parseFloat(pricePart)
+      }, 0);
+    }
+    const itemTotal = (item.price + addonTotal) * item.qty;
+    return {
+      name: item.name,
+      qty: item.qty,
+      basePrice: item.price,
+      addonTotal: addonTotal,
+      itemTotal: itemTotal
+    };
+  });
+
+  if (processedItems.length === 0 && cart.length > 0) return null;
+
+  const subtotal = processedItems.reduce((acc, item) => acc + item.itemTotal, 0);
+
+  let deliveryFee = 0;
+  if (subtotal >= 1000) {
+    deliveryFee = 0;
+  } else if (subtotal >= 500) {
+    deliveryFee = 15;
+  } else {
+    deliveryFee = 30;
+  }
+
+  const gst = parseFloat((subtotal * 0.05).toFixed(2));;
+  let discount = 0;
+  const validCoupon = coupon ? coupon.toUpperCase() : "";
+
+  if (validCoupon === "FIRST50") {
+    discount = Math.min(subtotal * 0.5, 150);
+  }
+  else if (validCoupon === "FLAT100") {
+    discount = 100;
+  }
+  else if (validCoupon === "FREESHIP") {
+    discount = deliveryFee;
+    deliveryFee = 0;
+  }
+
+  const rawTotal = subtotal + deliveryFee + gst - discount;
+
+  const grandTotal = parseFloat(Math.max(0, rawTotal).toFixed(2));
+
+  return {
+    items: processedItems,
+    subtotal: subtotal,
+    deliveryFee: deliveryFee,
+    gst: gst,
+    discount: discount,
+    grandTotal: grandTotal
+  };
+
 }
+
+

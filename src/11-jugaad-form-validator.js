@@ -63,4 +63,79 @@
  */
 export function validateForm(formData) {
   // Your code here
+  const errors = {};
+
+  if (typeof formData.name !== "string") {
+    errors.name = "Name must be 2-50 characters";
+  } else {
+    const trimmedName = formData.name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 50) {
+      errors.name = "Name must be 2-50 characters";
+    }
+  }
+
+  if (typeof formData.email !== "string") {
+    errors.email = "Invalid email format";
+  } else {
+    const atIndex = formData.email.indexOf("@");
+    const lastAtIndex = formData.email.lastIndexOf("@");
+    const dotIndex = formData.email.indexOf(".", atIndex); // Find dot AFTER the @ position
+
+    if (atIndex === -1 || atIndex !== lastAtIndex || dotIndex === -1) {
+      errors.email = "Invalid email format";
+    }
+  }
+
+
+  if (typeof formData.phone !== "string") {
+    errors.phone = "Invalid Indian phone number";
+  } else {
+
+    const validStarts = ["6", "7", "8", "9"];
+    const startsWithValid = validStarts.includes(formData.phone[0]);
+
+    const isAllDigits = /^\d+$/.test(formData.phone);
+
+    if (formData.phone.length !== 10 || !startsWithValid || !isAllDigits) {
+      errors.phone = "Invalid Indian phone number";
+    }
+  }
+
+
+  let ageVal = formData.age;
+
+
+  if (typeof ageVal === "string") {
+    ageVal = parseInt(ageVal, 10);
+  }
+
+
+  if (typeof ageVal !== "number" || isNaN(ageVal) || !Number.isInteger(ageVal) || ageVal < 16 || ageVal > 100) {
+    errors.age = "Age must be an integer between 16 and 100";
+  }
+
+  if (typeof formData.pincode !== "string") {
+    errors.pincode = "Invalid Indian pincode";
+  } else {
+    const isAllDigitsPin = /^\d+$/.test(formData.pincode);
+    if (formData.pincode.length !== 6 || formData.pincode.startsWith("0") || !isAllDigitsPin) {
+      errors.pincode = "Invalid Indian pincode";
+    }
+  }
+
+  const stateVal = (formData.state ?? "").trim(); // logic: if null/undefined -> "", else trim string
+  if (stateVal.length === 0) {
+    errors.state = "State is required";
+  }
+
+  if (!Boolean(formData.agreeTerms)) {
+    errors.agreeTerms = "Must agree to terms";
+  }
+
+  const errorKeys = Object.keys(errors);
+
+  return {
+    isValid: errorKeys.length === 0,
+    errors: errors
+  };
 }

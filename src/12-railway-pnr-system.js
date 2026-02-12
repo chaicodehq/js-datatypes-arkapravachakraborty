@@ -71,6 +71,7 @@
  *   //      passengers: [...], summary: { ..., allConfirmed: true }, chartPrepared: true }
  */
 export function processRailwayPNR(pnrData) {
+  // I am come here and see all the code is already written I dont know what to do so I just pushing the code as it is - Sorry Sir
   if (!pnrData || typeof pnrData !== 'object') return null;
   if (typeof pnrData.pnr !== 'string') return null;
   if (pnrData.pnr.length !== 10 || !/^\d{10}$/.test(pnrData.pnr)) return null;

@@ -45,4 +45,75 @@
  */
 export function iplAuctionSummary(team, players) {
   // Your code here
+  //   * Validation:
+  //  *   - Agar team object nahi hai ya team.purse positive number nahi hai, return null
+  //  *   - Agar players array nahi hai ya empty hai, return null
+  //  *
+  if (!team || typeof team != "object") return null;
+  if (typeof team.purse !== "number" || team.purse < 0) return null;
+  if (!Array.isArray(players) || players.length === 0) return null;
+
+  //   * Rules:
+  //  *   - team object: { name: "CSK", purse: 9000 } (purse in lakhs)
+  //  *   - players array: [{ name: "Dhoni", role: "wk", price: 1200 }, ...]
+  //  *   - role can be: "bat", "bowl", "ar" (all-rounder), "wk" (wicketkeeper)
+  //  *   - Calculate:
+  //  *     - totalSpent: sum of all player prices (use reduce)
+  //  *     - remaining: purse - totalSpent
+  //  *     - playerCount: total players bought
+  //  *     - costliestPlayer: player object with highest price
+  //  *     - cheapestPlayer: player object with lowest price
+  //  *     - averagePrice: Math.round(totalSpent / playerCount)
+  //  *     - byRole: object counting players per role using reduce
+  //  *       e.g., { bat: 3, bowl: 4, ar: 2, wk: 1 }
+  //  *     - isOverBudget: boolean, true agar totalSpent > purse
+  //  *   - Hint: Use reduce(), filter(), sort(), find(), every(), some(),
+  //  *     Array.isArray(), Math.round(), spread operator
+  //  *
+  const totalPurse = team.purse;
+  const playerCount = players.length;
+  let batCnt = 0;
+  let bowlCnt = 0;
+  let arCnt = 0;
+  let wkCnt = 0;
+  let totalSpent = players.reduce(
+    (sum, player) => { return sum + player.price }, 0
+  );
+  let remaningPurse = totalPurse - totalSpent;
+  let avgPrice = Math.round(totalSpent / playerCount);
+  let role = players.reduce((acc, player) => {
+    acc[player.role] = (acc[player.role] || 0) + 1;
+    return acc;
+  }, {})
+
+  const costiliestPlayer = players.reduce((prev, curr) => {
+    return (prev.price > curr.price) ? prev : curr;
+  })
+
+  const chepestPlayer = players.reduce((prev, curr) => {
+    return (prev.price < curr.price) ? prev : curr;
+  })
+
+  //   *   iplAuctionSummary(
+  //  *     { name: "CSK", purse: 9000 },
+  //  *     [{ name: "Dhoni", role: "wk", price: 1200 }, { name: "Jadeja", role: "ar", price: 1600 }]
+  //  *   )
+  //  *   // => { teamName: "CSK", totalSpent: 2800, remaining: 6200, playerCount: 2,
+  //  *   //      costliestPlayer: { name: "Jadeja", role: "ar", price: 1600 },
+  //  *   //      cheapestPlayer: { name: "Dhoni", role: "wk", price: 1200 },
+  //  *   //      averagePrice: 1400, byRole: { wk: 1, ar: 1 }, isOverBudget: false }
+  //  *
+
+  return {
+    teamName: team.name,
+    totalSpent: totalSpent,
+    remaining: remaningPurse,
+    playerCount: playerCount,
+    costliestPlayer: costiliestPlayer,
+    cheapestPlayer: chepestPlayer,
+    averagePrice: avgPrice,
+    byRole: role,
+    isOverBudget: totalSpent > totalPurse
+  };
+
 }

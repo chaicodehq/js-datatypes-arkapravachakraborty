@@ -40,6 +40,75 @@
  *   generateReportCard({ name: "Priya", marks: { maths: 35, science: 28 } })
  *   // => { name: "Priya", totalMarks: 63, percentage: 31.5, grade: "F", ... }
  */
+
+//  * Validation:
+//  *   - Agar student object nahi hai ya null hai, return null
+//  *   - Agar student.name string nahi hai ya empty hai, return null
+//  *   - Agar student.marks object nahi hai ya empty hai (no keys), return null
+//  *   - Agar koi mark valid number nahi hai (not between 0 and 100 inclusive),
+//  *     return null
 export function generateReportCard(student) {
   // Your code here
+  if (!student || typeof student !== "object") return null;
+
+  if (typeof student.name !== "string" || student.name.length === 0) return null;
+  if (!student.marks || typeof student.marks !== "object") return null;
+
+  const subjects = Object.keys(student.marks);
+  if (subjects.length === 0) return null;
+
+  const marks = Object.values(student.marks);
+
+  let totalMarks = 0;
+  for (let mark of marks) {
+    if (typeof mark !== "number" || mark < 0 || mark > 100) return null;
+    totalMarks += mark;
+  }
+  const count = subjects.length;
+
+  let passedSubjects = [];
+  let failedSubjects = [];
+
+  for (const [key, value] of Object.entries(student.marks)) {
+    if (value >= 40) passedSubjects.push(key);
+    else failedSubjects.push(key);
+  }
+
+  const maxNum = subjects.reduce((a, b) =>
+    student.marks[a] > student.marks[b] ? a : b
+  );
+
+  const minNum = subjects.reduce((a, b) =>
+    student.marks[a] < student.marks[b] ? a : b
+  );
+
+  const perc = parseFloat(((totalMarks / (count * 100)) * 100).toFixed(2));
+
+  let obtainGrade;
+  //  *"A+" (>= 90), "A" (>= 80), "B" (>= 70), "C" (>= 60), "D" (>= 40), "F" (< 40)
+  if (perc >= 90) obtainGrade = "A+";
+  else if (perc >= 80) obtainGrade = "A";
+  else if (perc >= 70) obtainGrade = "B";
+  else if (perc >= 60) obtainGrade = "C";
+  else if (perc >= 40) obtainGrade = "D";
+  else obtainGrade = "F";
+
+
+  //   generateReportCard({ name: "Rahul", marks: { maths: 85, science: 92, english: 78 } })
+  //  *   // => { name: "Rahul", totalMarks: 255, percentage: 85, grade: "A",
+  //  *   //      highestSubject: "science", lowestSubject: "english",
+  //  *   //      passedSubjects: ["maths", "science", "english"], failedSubjects: [],
+  //  *   //      subjectCount: 3 }
+
+  return {
+    name: student.name,
+    totalMarks: totalMarks,
+    percentage: perc,
+    grade: obtainGrade,
+    highestSubject: maxNum,
+    lowestSubject: minNum,
+    passedSubjects: passedSubjects,
+    failedSubjects: failedSubjects,
+    subjectCount: count
+  }
 }
